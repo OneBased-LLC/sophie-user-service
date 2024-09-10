@@ -50,20 +50,14 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/spring-boot-github-action-demo:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/onebased-spring-boot-service:latest
   deploy:
     needs: build
     runs-on: [aws-ec2]
     steps:
       - name: Pull Image from docker hub
-        run: sudo docker pull mohibgazi/spring-boot-github-action-demo:latest
+        run: sudo docker pull OneBased-LLC/onebased-spring-boot-service:latest
       - name: Delete old container
         run: sudo docker rm -f spring-boot-app-container
       - name: Run Docker Image
-        run: sudo docker run -d -p 8080:8080 --name spring-boot-app-container mohibgazi/spring-boot-github-action-demo
-
-
-        
-          
-      
-
+        run: sudo docker run -d -p 8080:8080 --name spring-boot-app-container OneBased-LLC/onebased-spring-boot-service
