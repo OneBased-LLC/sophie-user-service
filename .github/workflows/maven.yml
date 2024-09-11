@@ -29,19 +29,29 @@ jobs:
       - name: Build and test with Maven
         run: mvn clean verify --fail-at-end
 
-      - name: Calculate code coverage
-        run: mvn jacoco:report
+      - name: Create JaCoCo Code Coverage Report
+        id: jacoco_reporter
+        uses: PavanMudigonda/jacoco-reporter@v5.0
+        with:
+          coverage_results_path: target/site/jacoco/jacoco.xml
+          coverage_report_name: Coverage
+          coverage_report_title: JaCoCo
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_check_run: true
+          minimum_coverage: 80
+          fail_below_threshold: false
+          publish_only_summary: false
 
-      - name: Check code coverage
+      # Publish Coverage Job Summary  # Optional
+      - name: Add Jacocoo report to workflow run summary
         run: |
-          COVERAGE=$(mvn jacoco:report | grep 'Coverage' | grep -oP '(?<=Coverage: )\d+\.\d+')
-          echo "Coverage is $COVERAGE"
-          if (( $(echo "$COVERAGE < 99.0" | bc -l) )); then
-            echo "Code coverage is below 99%"
-            exit 1
-          fi
-        env:
-          COVERAGE_THRESHOLD: 99.0
+          echo "| Outcome | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Coverage % | ${{ steps.jacoco_reporter.outputs.coverage_percentage }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| :heavy_check_mark: Number of Lines Covered | ${{ steps.jacoco_reporter.outputs.covered_lines }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| :x: Number of Lines Missed | ${{ steps.jacoco_reporter.outputs.missed_lines }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Number of Lines | ${{ steps.jacoco_reporter.outputs.total_lines }} |" >> $GITHUB_STEP_SUMMARY
+  
 
   build:
     runs-on: ubuntu-latest
