@@ -10,6 +10,6 @@ public class HomeController {
 
     @GetMapping("home")
     public String index(){
-        return "Hello World! Testing Github Action";
+        return "OneBased Backend Service home endpoint running as expected.";
     }
 }
