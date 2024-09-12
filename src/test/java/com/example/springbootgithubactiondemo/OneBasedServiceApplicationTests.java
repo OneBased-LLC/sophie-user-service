@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class SpringBootGithubActionDemoApplicationTests {
+class OneBasedServiceApplicationTests {
 
     @Autowired
     private HomeController controller;
@@ -25,6 +25,7 @@ class SpringBootGithubActionDemoApplicationTests {
     @Test
     void contextLoads() {
     }
+
 
     @Test
     void getHomeController() throws Exception {
