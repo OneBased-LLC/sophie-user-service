@@ -43,7 +43,7 @@ class OneBasedServiceApplicationTests {
 
 
     @Test
-    void getHomeController() throws Exception {
+    void TestGetHomeController() throws Exception {
         // perform request and verify status
         mockMvc.perform(get("/api/v1/home"))
                 .andExpect(status().isOk())
@@ -51,7 +51,7 @@ class OneBasedServiceApplicationTests {
     }
 
     @Test
-    void submitData() throws Exception {
+    void TestSubmitData() throws Exception {
 
         // Mock Mongo Client methods
         MongoClient mockMongoClient = mock(MongoClient.class);
