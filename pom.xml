@@ -103,7 +103,7 @@
                 <version>0.8.12 </version>
                 <configuration>
                     <excludes>
-                        <exclude>com/example/springbootgithubactiondemo/SpringBootGithubActionDemoApplication*</exclude>
+                        <exclude>com/example/springbootgithubactiondemo/OneBasedServiceSpringApplication*</exclude>
                     </excludes>
                 </configuration>
                 <executions>

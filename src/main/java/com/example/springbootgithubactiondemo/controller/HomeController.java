@@ -19,13 +19,21 @@ import static com.example.springbootgithubactiondemo.Utils.*;
 public class HomeController {
 
     @Autowired
+    private final MongoClient mongoClient;
+
+    @Autowired
+    public HomeController(MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
+    }
+
+    @Autowired
     private DatabaseConfig databaseProperties;
+
 
     @GetMapping("home")
     public String index(){
         return "OneBased Backend Service home endpoint running as expected.";
     }
-
 
     @Operation(
             summary = "Submit data",
@@ -33,14 +41,10 @@ public class HomeController {
     )
     @PostMapping("/submit")
     public String submitData(@RequestBody String data) {
-        String connectionString = "mongodb://" + databaseProperties.getHost() + ":" + databaseProperties.getPort();
-        try (MongoClient mongoClient = MongoClients.create(connectionString)) {
-            System.out.println("=> Connection successful: " + preFlightChecks(mongoClient));
-            System.out.println("=> Print list of databases:");
-
-            List<Document> databases = mongoClient.listDatabases().into(new ArrayList<>());
-            databases.forEach(db -> System.out.println(db.toJson()));
-        }
+        System.out.println("=> Connection successful: " + preFlightChecks(mongoClient));
+        System.out.println("=> Print list of databases:");
+        List<Document> databases = mongoClient.listDatabases().into(new ArrayList<>());
+        databases.forEach(db -> System.out.println(db.toJson()));
         return "Received data: " + data;
     }
 }

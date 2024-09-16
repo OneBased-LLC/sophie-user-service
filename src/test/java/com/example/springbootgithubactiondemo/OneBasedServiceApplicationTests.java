@@ -14,9 +14,12 @@ import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.*;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,6 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "onebased.db.port=2020"
 })
 class OneBasedServiceApplicationTests {
+
+    @MockBean
+    MongoClient mockMongoClient;
 
     @Autowired
     private HomeController controller;
@@ -53,34 +59,28 @@ class OneBasedServiceApplicationTests {
     @Test
     void TestSubmitData() throws Exception {
 
-        // Mock Mongo Client methods
-        MongoClient mockMongoClient = mock(MongoClient.class);
+        // Mock Mongo Client List Databases methods
         ListDatabasesIterable<Document> mockDatabases = mock(ListDatabasesIterable.class);
+        Document db1 = new Document("name", "db1");
+        List<Document> dbList = new ArrayList<Document>();
+        dbList.add(db1);
+
         when(mockMongoClient.listDatabases()).thenReturn(mockDatabases);
+        when(mockDatabases.into(any())).thenReturn(dbList);
 
         // Mock preFlight Checks from utils
         try (MockedStatic<Utils> mockedUtils = mockStatic(Utils.class)) {
             mockedUtils.when(() -> preFlightChecks(mockMongoClient)).thenReturn(true);
-
-            try (MockedStatic<MongoClients> mockedStatic = mockStatic(MongoClients.class)) {
-
-                // Set up the behavior of the static method
-                mockedStatic.when(() -> MongoClients.create(any(String.class))).thenReturn(mockMongoClient);
-
-                when(MongoClients.create(any(String.class))).thenReturn(mockMongoClient);
-
-                // perform request and verify status
-                mockMvc.perform(post("/api/v1/submit").content("submission"))
-                        .andExpect(status().isOk())
-                        .andExpect(MockMvcResultMatchers.content().string("Received data: submission"));
-            }
+            // perform request and verify status
+            mockMvc.perform(post("/api/v1/submit").content("submission"))
+                    .andExpect(status().isOk())
+                    .andExpect(MockMvcResultMatchers.content().string("Received data: submission"));
         }
     }
 
     @Test
     public void testPreFlightChecksSuccess() {
-        // Mocking the MongoClient and related objects
-        MongoClient mockMongoClient = mock(MongoClient.class);
+        // Mocking the MongoDB
         MongoDatabase mockDatabase = mock(MongoDatabase.class);
         MongoCollection<Document> mockCollection = mock(MongoCollection.class);
 
@@ -100,8 +100,7 @@ class OneBasedServiceApplicationTests {
 
     @Test
     public void testPreFlightChecksFailure() {
-        // Mocking the MongoClient and related objects
-        MongoClient mockMongoClient = mock(MongoClient.class);
+        // Mocking the MongoDB
         MongoDatabase mockDatabase = mock(MongoDatabase.class);
         MongoCollection<Document> mockCollection = mock(MongoCollection.class);
 
