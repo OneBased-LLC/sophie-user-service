@@ -86,15 +86,15 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/onebased-spring-boot-service:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/sophie-user-service:latest
 
   deploy:
     needs: build
-    runs-on: [aws-ec2]
+    runs-on: self-hosted
     steps:
       - name: Pull Image from docker hub
-        run: sudo docker pull cool1682/onebased-spring-boot-service:latest
+        run: sudo docker pull cool1682/sophie-user-service:latest
       - name: Delete old container
-        run: sudo docker rm -f spring-boot-app-container
+        run: sudo docker rm -f sophie-user-service-container
       - name: Run Docker Image
-        run: sudo docker run -d -p 80:8080 --name spring-boot-app-container cool1682/onebased-spring-boot-service
+        run: sudo docker run -d -p 80:8080 --name sophie-user-service-container cool1682/sophie-user-service
