@@ -1,6 +1,7 @@
 package com.example.springbootgithubactiondemo.controller;
 
 import com.example.springbootgithubactiondemo.DatabaseConfig;
+import com.example.springbootgithubactiondemo.repository.UserRepository;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.bson.Document;
@@ -22,13 +23,16 @@ public class HomeController {
     private final MongoClient mongoClient;
 
     @Autowired
-    public HomeController(MongoClient mongoClient) {
+    private final UserRepository userRepository;
+
+    @Autowired
+    public HomeController(MongoClient mongoClient, UserRepository userRepository) {
         this.mongoClient = mongoClient;
+        this.userRepository = userRepository;
     }
 
     @Autowired
     private DatabaseConfig databaseProperties;
-
 
     @GetMapping("home")
     public String index(){
