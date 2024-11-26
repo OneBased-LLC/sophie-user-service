@@ -33,13 +33,13 @@ public class UserEventHandler {
         String secretHash = Utils.calculateSecretHash(userPoolClientId, userPoolClientSecret, user.getUsername());
 
         AttributeType emailAttribute = AttributeType.builder()
-                .name("emails")
+                .name("email")
                 .value(user.getEmail())
                 .build();
 
         AttributeType nameAttribute = AttributeType.builder()
                 .name("name")
-                .value("Chris")
+                .value(user.getName())
                 .build();
 
         SignUpRequest signUpRequest = SignUpRequest.builder()

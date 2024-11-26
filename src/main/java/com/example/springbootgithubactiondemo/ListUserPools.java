@@ -1,6 +1,7 @@
 package com.example.springbootgithubactiondemo;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -17,13 +18,9 @@ public class ListUserPools {
     }
 
     public void initializeClient() {
-        String clientId = "YOUR_APP_CLIENT_ID"; // Replace with your app client ID
-        String userPoolId = "YOUR_USER_POOL_ID"; // Replace with your Cognito user pool ID
-        String accessKey = "";
-        String secretKey = "";
         activeCognitoClient = CognitoIdentityProviderClient.builder()
                 .region(Region.US_WEST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+                .credentialsProvider(ProfileCredentialsProvider.create("default"))
                 .build();
     };
 

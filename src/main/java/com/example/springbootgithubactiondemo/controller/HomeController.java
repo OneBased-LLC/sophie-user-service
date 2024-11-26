@@ -2,6 +2,7 @@ package com.example.springbootgithubactiondemo.controller;
 
 import com.example.springbootgithubactiondemo.DatabaseConfig;
 import com.example.springbootgithubactiondemo.ListUserPools;
+import com.example.springbootgithubactiondemo.LoginUser;
 import com.example.springbootgithubactiondemo.repository.UserRepository;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -57,6 +58,17 @@ public class HomeController {
         System.out.println("=> Print list of databases:");
         List<Document> databases = mongoClient.listDatabases().into(new ArrayList<>());
         databases.forEach(db -> System.out.println(db.toJson()));
+        return "Received data: " + data;
+    }
+
+    @Operation(
+            summary = "Login",
+            description = "Authenticate to SOPHIE 2.0"
+    )
+    @PostMapping("/login")
+    public String loginUser(@RequestBody String data) {
+        String userPoolClientId = "4t08ueomq1j8ava2ehnh1vujlt";
+        LoginUser.initiateAuth(cognitoClient, userPoolClientId,
         return "Received data: " + data;
     }
 }
