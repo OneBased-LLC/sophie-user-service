@@ -89,7 +89,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: self-hosted
+    runs-on: [aws-ec2]
     steps:
       - name: Pull Image from docker hub
         run: sudo docker pull cool1682/sophie-user-service:latest
