@@ -1,5 +1,10 @@
 package com.example.springbootgithubactiondemo.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.RSAKeyProvider;
+import com.example.springbootgithubactiondemo.AwsCognitoRSAKeyProvider;
 import com.example.springbootgithubactiondemo.DatabaseConfig;
 import com.example.springbootgithubactiondemo.ListUserPools;
 import com.example.springbootgithubactiondemo.LoginUser;
@@ -10,6 +15,7 @@ import org.bson.Document;
 
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 
@@ -32,6 +38,9 @@ public class HomeController {
     private final CognitoIdentityProviderClient cognitoClient;
 
     @Autowired
+    private Environment env;
+
+    @Autowired
     public HomeController(MongoClient mongoClient, UserRepository userRepository, CognitoIdentityProviderClient cognitoClient) {
         this.mongoClient = mongoClient;
         this.userRepository = userRepository;
@@ -41,11 +50,14 @@ public class HomeController {
     @Autowired
     private DatabaseConfig databaseProperties;
 
-    @GetMapping("home")
-    public String index(){
-        ListUserPools userPoolsAWS = new ListUserPools();
-        ListUserPools.listAllUserPools(cognitoClient);
-        return "OneBased Backend Service home endpoint running as expected.";
+    @GetMapping("verify")
+    public String index(@RequestParam String token){
+        RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider("us-west-2", "us-west-2_Ck5A798lj");
+        Algorithm algorithm = Algorithm.RSA256(keyProvider);
+        JWTVerifier jwtVerifier = JWT.require(algorithm)
+                .build();
+
+        return jwtVerifier.verify(token).getClaim("sub").asString();
     }
 
     @Operation(
@@ -66,9 +78,10 @@ public class HomeController {
             description = "Authenticate to SOPHIE 2.0"
     )
     @PostMapping("/login")
-    public String loginUser(@RequestBody String data) {
+    public String loginUser(@RequestParam String username, @RequestParam String password) {
         String userPoolClientId = "4t08ueomq1j8ava2ehnh1vujlt";
-        LoginUser.initiateAuth(cognitoClient, userPoolClientId,
-        return "Received data: " + data;
+        String userPoolClientSecret = env.getProperty("USER_POOL_SECRET");
+        System.out.println(username);
+        return LoginUser.initiateAuth(cognitoClient, userPoolClientId, userPoolClientSecret, username, password);
     }
 }

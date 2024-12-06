@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.springbootgithubactiondemo.Utils.calculateSecretHash;
+
 /**
  * To run this Java code example, you need to create a client app in a user pool
  * with a secret key. For details, see:
@@ -28,13 +30,15 @@ import java.util.Map;
 
 public class LoginUser {
 
-    public static String initiateAuth(CognitoIdentityProviderClient cognitoClient, String clientId, String username, String password) {
-        InitiateAuthRequest authRequest = InitiateAuthRequest.builder()
-                .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
-                .clientId(clientId)
-                .authParameters(Map.of("USERNAME", username, "PASSWORD", password)).build();
+    public static String initiateAuth(CognitoIdentityProviderClient cognitoClient, String clientId, String secretKey, String username, String password) {
 
         try {
+            String secretVal = calculateSecretHash(clientId, secretKey, username);
+            InitiateAuthRequest authRequest = InitiateAuthRequest.builder()
+                    .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
+                    .clientId(clientId)
+                    .authParameters(Map.of("USERNAME", username, "PASSWORD", password, "SECRET_HASH", secretVal))
+                    .build();
             InitiateAuthResponse authResult = cognitoClient.initiateAuth(authRequest);
             return authResult.authenticationResult().idToken(); // Return the ID token
         } catch (NotAuthorizedException e) {

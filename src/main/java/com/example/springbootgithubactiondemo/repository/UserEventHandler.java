@@ -4,6 +4,7 @@ import com.example.springbootgithubactiondemo.Utils;
 import com.example.springbootgithubactiondemo.user.User;
 import com.example.springbootgithubactiondemo.Utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
@@ -24,11 +25,14 @@ public class UserEventHandler {
         this.cognitoClient = cognitoClient;
     }
 
+    @Autowired
+    private Environment env;
+
     @HandleBeforeCreate
     public void handleUserBeforeCreate(User user) throws Exception {
 
         String userPoolClientId = "4t08ueomq1j8ava2ehnh1vujlt";
-        String userPoolClientSecret = "1ubg7lnjktnc6kft1kku5cht2l1nurfk0n5ff42gsagq7cpeh45u";
+        String userPoolClientSecret = env.getProperty("USER_POOL_SECRET");
 
         String secretHash = Utils.calculateSecretHash(userPoolClientId, userPoolClientSecret, user.getUsername());
 

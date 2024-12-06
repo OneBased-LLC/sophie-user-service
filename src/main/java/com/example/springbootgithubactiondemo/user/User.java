@@ -101,10 +101,6 @@ public class User {
     };
     public void setName(String name) { this.name = name; }
 
-//    public void loadUser(UserRepository userRepository) {
-//        userRepository.findOne()
-//    }
-
     @Override
     public String toString() {
         return "User{" +
