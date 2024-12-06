@@ -1,5 +1,10 @@
 package com.example.springbootgithubactiondemo.user;
 
+import com.example.springbootgithubactiondemo.repository.UserRepository;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -9,12 +14,17 @@ import java.util.UUID;
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;  // This is the primary key
 
     private String username;
+
     private String email;
+
     private String password; // Make sure to handle passwords securely
     private String role;
+
+    private String name;
 
     private String profilePicture; // Storing the profile picture as a byte array
 
@@ -24,13 +34,16 @@ public class User {
         this.id = UUID.randomUUID();
     }
 
-    public User(String username, String email, String password, String role, String profilePicture) {
+    public User(String username, String password) { this.username = username; this.password = password; }
+
+    public User(String username, String email, String password, String role, String profilePicture, String name) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.role = role;
         this.id = UUID.randomUUID();
         this.profilePicture = profilePicture;
+        this.name = name;
     }
 
     // Getters and Setters
@@ -58,6 +71,7 @@ public class User {
         this.email = email;
     }
 
+
     public String getPassword() {
         return password;
     }
@@ -81,6 +95,11 @@ public class User {
     public void setProfilePicture(String profilePicture) {
         this.profilePicture = profilePicture;
     }
+
+    public String getName() {
+        return name;
+    };
+    public void setName(String name) { this.name = name; }
 
     @Override
     public String toString() {
