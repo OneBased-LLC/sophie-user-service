@@ -40,6 +40,7 @@ public class LoginUser {
                     .authParameters(Map.of("USERNAME", username, "PASSWORD", password, "SECRET_HASH", secretVal))
                     .build();
             InitiateAuthResponse authResult = cognitoClient.initiateAuth(authRequest);
+
             return authResult.authenticationResult().idToken(); // Return the ID token
         } catch (NotAuthorizedException e) {
             // Handle incorrect username or password

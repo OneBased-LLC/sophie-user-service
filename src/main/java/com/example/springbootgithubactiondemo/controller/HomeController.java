@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ConfirmSignUpRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ConfirmSignUpResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +83,33 @@ public class HomeController {
     public String loginUser(@RequestParam String username, @RequestParam String password) {
         String userPoolClientId = "4t08ueomq1j8ava2ehnh1vujlt";
         String userPoolClientSecret = env.getProperty("USER_POOL_SECRET");
-        System.out.println(username);
         return LoginUser.initiateAuth(cognitoClient, userPoolClientId, userPoolClientSecret, username, password);
+    }
+
+    @Operation(
+            summary = "Confirm",
+            description = "Confirm code for Sign Up in Cognito"
+    )
+    @PostMapping("/confirm")
+    public String confirmUser(@RequestParam String username, @RequestParam String code) {
+        String userPoolClientId = "4t08ueomq1j8ava2ehnh1vujlt";
+        String userPoolClientSecret = env.getProperty("USER_POOL_SECRET");
+
+        try {
+            String secretVal = calculateSecretHash(userPoolClientId, userPoolClientSecret, username);
+            ConfirmSignUpRequest request = ConfirmSignUpRequest.builder()
+                    .username(username)
+                    .confirmationCode(code)
+                    .clientId(userPoolClientId)
+                    .secretHash(secretVal)
+                    .build();
+
+            ConfirmSignUpResponse response = cognitoClient.confirmSignUp(request);
+            return response.sdkHttpResponse().toString();
+        }
+        catch (Exception e) {
+            return "Error";
+        }
+
     }
 }
