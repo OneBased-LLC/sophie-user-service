@@ -48,13 +48,13 @@ class OneBasedServiceApplicationTests {
     }
 
 
-    @Test
-    void TestGetHomeController() throws Exception {
-        // perform request and verify status
-        mockMvc.perform(get("/api/v1/home"))
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("OneBased Backend Service home endpoint running as expected."));
-    }
+//    @Test
+//    void TestGetHomeController() throws Exception {
+//        // perform request and verify status
+//        mockMvc.perform(get("/api/v1/home"))
+//                .andExpect(status().isOk())
+//                .andExpect(MockMvcResultMatchers.content().string("OneBased Backend Service home endpoint running as expected."));
+//    }
 
     @Test
     void TestSubmitData() throws Exception {

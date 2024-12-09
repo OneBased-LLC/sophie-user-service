@@ -13,7 +13,7 @@ class UserTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("testuser", "test@example.com", "password123", "USER", "profilePic.png");
+        user = new User("testuser", "test@example.com", "password123", "USER", "profilePic.png", "matt");
     }
 
     @Test
@@ -24,6 +24,7 @@ class UserTest {
         assertEquals("password123", user.getPassword());
         assertEquals("USER", user.getRole());
         assertEquals("profilePic.png", user.getProfilePicture());
+        assertEquals("matt", user.getName());
     }
 
     @Test
@@ -35,6 +36,7 @@ class UserTest {
         user.setProfilePicture("newProfilePic.png");
         UUID newId = UUID.randomUUID();
         user.setId(newId);
+        user.setUsername("newuser");
 
         assertEquals("newuser", user.getUsername());
         assertEquals("new@example.com", user.getEmail());
@@ -42,6 +44,7 @@ class UserTest {
         assertEquals("ADMIN", user.getRole());
         assertEquals("newProfilePic.png", user.getProfilePicture());
         assertEquals(newId, user.getId());
+        assertEquals("newuser", user.getUsername());
     }
 
     @Test

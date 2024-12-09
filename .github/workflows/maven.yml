@@ -89,11 +89,11 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: self-hosted
+    runs-on: [aws-ec2]
     steps:
       - name: Pull Image from docker hub
         run: sudo docker pull cool1682/sophie-user-service:latest
       - name: Delete old container
         run: sudo docker rm -f sophie-user-service-container
       - name: Run Docker Image
-        run: sudo docker run -d -p 80:8080 --name sophie-user-service-container cool1682/sophie-user-service
+        run: sudo docker run -e USER_POOL_SECRET=${{ secrets.USER_POOL_SECRET }} -d -p 80:8080 --name sophie-user-service-container cool1682/sophie-user-service
