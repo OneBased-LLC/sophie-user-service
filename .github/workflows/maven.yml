@@ -62,6 +62,19 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+
+      # Step 1: Set up AWS credentials using GitHub Secrets
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 2: Log in to Amazon ECR (using aws-actions/amazon-ecr-login)
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+
     - name: Build with Maven
       run: |
            mvn clean install
@@ -72,28 +85,35 @@ jobs:
       with:
         name: github-action-artifact
         path: artifacts
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    - name: Build and push
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/sophie-user-service:latest
 
-  deploy:
-    needs: build
-    runs-on: [aws-ec2]
-    steps:
-      - name: Pull Image from docker hub
-        run: sudo docker pull cool1682/sophie-user-service:latest
-      - name: Delete old container
-        run: sudo docker rm -f sophie-user-service-container
-      - name: Run Docker Image
-        run: sudo docker run -e USER_POOL_SECRET=${{ secrets.USER_POOL_SECRET }} -d -p 80:8080 --name sophie-user-service-container cool1682/sophie-user-service
+    # Step 5: Log in to AWS ECR using GitHub Secrets
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # Step 6: Build Docker image
+    - name: Build Docker image
+      run: |
+        IMAGE_TAG=user-service-latest
+        REPOSITORY_URI=${{ secrets.ECR_REPOSITORY_URI }}  # Make sure you set this as a secret
+        
+        # Build Docker image (make sure your Dockerfile is in the root or adjust the context)
+        echo $REPOSITORY_URI:$IMAGE_TAG
+        docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+
+    # Step 7: Push Docker image to ECR
+    - name: Push Docker image to ECR
+      run: |
+        IMAGE_TAG=user-service-latest
+        REPOSITORY_URI=${{ secrets.ECR_REPOSITORY_URI }}
+        docker push $REPOSITORY_URI:$IMAGE_TAG
+
+#  deploy:
+#    needs: build
+#    runs-on: [aws-ec2]
+#    steps:
+#      - name: Pull Image from docker hub
+#        run: sudo docker pull cool1682/sophie-user-service:latest
+#      - name: Delete old container
+#        run: sudo docker rm -f sophie-user-service-container
+#      - name: Run Docker Image
+#        run: sudo docker run -e USER_POOL_SECRET=${{ secrets.USER_POOL_SECRET }} -d -p 80:8080 --name sophie-user-service-container cool1682/sophie-user-service
