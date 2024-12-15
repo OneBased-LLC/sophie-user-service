@@ -13,6 +13,13 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+
+env:
+  ECS_TASK_DEFINITION: .aws/task-definition.json
+  CONTAINER_NAME: "sophie-user-service"
+  ECS_SERVICE: "sophie"
+  ECS_CLUSTER: "onebased-sophie-dev"
+
 jobs:
 
   test:
@@ -54,6 +61,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    outputs:
+      image-uri: ${{ steps.build-image.outputs.image }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 17
@@ -70,10 +79,6 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
-
-      # Step 2: Log in to Amazon ECR (using aws-actions/amazon-ecr-login)
-    - name: Log in to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build with Maven
       run: |
@@ -102,10 +107,62 @@ jobs:
 
     # Step 7: Push Docker image to ECR
     - name: Push Docker image to ECR
+      id: build-image
       run: |
         IMAGE_TAG=user-service-latest
         REPOSITORY_URI=${{ secrets.ECR_REPOSITORY_URI }}
         docker push $REPOSITORY_URI:$IMAGE_TAG
+    
+        # Concatenate REPOSITORY_URI and IMAGE_TAG
+        IMAGE="$REPOSITORY_URI:$IMAGE_TAG"
+        echo "IMAGE_URI=$IMAGE" >> $GITHUB_ENV
+
+    - name: Write ECR Image URI to Parameter Store
+      run: |
+        IMAGE_URI=${{ env.IMAGE_URI }}
+        aws ssm put-parameter \
+          --name "/onebased/sophie/user-service/image-uri" \
+          --value "$IMAGE_URI" \
+          --type String \
+          --overwrite
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Retrieve ECR Image URI from Parameter Store
+        id: get-image-uri
+        run: |
+          IMAGE_URI=$(aws ssm get-parameter --name "/onebased/sophie/user-service/image-uri" --query "Parameter.Value" --output text)
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          echo "Retrieved Image URI: $IMAGE_URI"
+
+      - name: Assign Image to Task Definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ env.IMAGE_URI }}
+
+      - name: Deploy Amazon ECS task
+        uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
 
 #  deploy:
 #    needs: build
